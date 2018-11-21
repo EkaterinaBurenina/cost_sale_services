@@ -1,22 +1,31 @@
-from flask import Flask, request
-import os
-import json
+import sale_pb2
+import sale_pb2_grpc
+from concurrent import futures
+import time
+import grpc
 
+class CalculatorSales(sale_pb2_grpc.CalculatorSaleServicer):
 
-app = Flask(__name__)
+    def GetSale(self, request, context):
+        response = sale_pb2.Cost()
+        response.value = self._calculate_sale(request.value)
+        return response
 
-
-@app.route("/discounts")
-def sale():
-    cost = int(request.args.get('cost'))
-    end_cost = get_sale(cost)
-    return  json.dumps({'result': end_cost})
-
-
-def get_sale(cost):
-    result = 0.5*cost
-    return result
+    @staticmethod
+    def _calculate_sale(value):
+        return value * 0.5
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv('LISTEN_PORT', 5000)))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
+    port = 8001
+
+    sale_pb2_grpc.add_CalculatorSaleServicer_to_server(CalculatorSales(), server)
+    server.add_insecure_port(f'[::]:{port}')
+    server.start()
+
+    try:
+        while True:
+            time.sleep(800)
+    except KeyboardInterrupt:
+        server.stop(0)
