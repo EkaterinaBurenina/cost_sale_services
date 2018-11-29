@@ -4,12 +4,12 @@ package main
 
 import (
         "context"
+        "fmt"
         "log"
-        "os"
         "time"
 
         "google.golang.org/grpc"
-        pb "src/home/ekaterina/cost_sale_services"
+        pb "./sale_proto"
 )
 
 const (
@@ -23,18 +23,13 @@ func main() {
                 log.Fatalf("did not connect: %v", err)
         }
         defer conn.Close()
-        c := pb.NewGreeterClient(conn)
+        c := pb.NewCalculatorSaleClient(conn)
 
         ctx, cancel := context.WithTimeout(context.Background(), time.Second)
         defer cancel()
-        r, err := c.GetSale(ctx, &pb.Cost{cost: 100})
+        r, err := c.GetSale(ctx, &pb.Cost{Cost: 100})
         if err != nil {
                 log.Fatalf("could not response: %v", err)
         }
-        log.Printf("Response: %s", r.Message)
-        r, err = c.SayHelloAgain(ctx, &pb.HelloRequest{Name: name})
-        if err != nil {
-                log.Fatalf("could not response: %v", err)
-        }
-        log.Printf("Response: %s", r.Message)
+        fmt.Println("Response: ", r.Cost)
 }

@@ -8,7 +8,7 @@ class CalculatorSales(sale_pb2_grpc.CalculatorSaleServicer):
 
     def GetSale(self, request, context):
         response = sale_pb2.Cost()
-        response.value = self._calculate_sale(request.value)
+        response.cost = self._calculate_sale(request.cost)
         return response
 
     @staticmethod
